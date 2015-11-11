@@ -19,20 +19,24 @@ import java.util.logging.Logger;
  Dominik Pruss
  Networks 466 Lab 5
  */
+
 public class DistanceVector {
 
-    Scanner in = new Scanner(System.in);
-
+    Scanner in = new Scanner(System.in);                            //initialize scanner
+   
+    /*
+    Constructor
+    */
     public DistanceVector() {
         
         
-        char ID;
-        int routerNum = 0;
-        boolean acceptableInput = false;
+        char ID;                                                    //store router name
+        int routerNum = 0;                                          //asign number to router
+        boolean acceptableInput = false;                            //boolean to see if input is valid
         do {
-            System.out.print("Enter This Router's ID:");
-            ID = in.nextLine().charAt(0);
-            switch (ID) {
+            System.out.print("Enter This Router's ID:");            //prompt user for info
+            ID = in.nextLine().charAt(0);                           //store information
+            switch (ID) {                                           //switch on input to read appropriate lines from file
 
                 case 'X':
                 case 'x':
@@ -52,24 +56,25 @@ public class DistanceVector {
                 default:
                     System.out.println("This input is incorrect, please enter X,Y, or Z.");
             }
-        } while (acceptableInput == false);
-        Router rout = setupRouter(ID, routerNum);
-        System.out.println("Router " + ID + " is running on port " + rout.getPort());
+        } while (acceptableInput == false);                         //run until input is valid
         
-        DatagramSocket senderSocket = null;
-        DatagramSocket receiverSocket =null;
+        Router rout = setupRouter(ID, routerNum);                   //initialize router with given info
+        System.out.println("Router " + ID + " is running on port " + rout.getPort()); //print out info
+        
+        DatagramSocket senderSocket = null;                         //create socket to send on
+        DatagramSocket receiverSocket =null;                        //create socket to receive on
         try {
-            receiverSocket = new DatagramSocket(rout.getPort()+1000);
-            senderSocket = new DatagramSocket(rout.getPort());
-        } catch (SocketException ex) {
+            receiverSocket = new DatagramSocket(rout.getPort()+1000);   //initialize receiver
+            senderSocket = new DatagramSocket(rout.getPort());          //initialize sender
+        } catch (SocketException ex) {                                  //catch exceptions
             Logger.getLogger(DistanceVector.class.getName()).log(Level.SEVERE, null, ex);
         }
-        String vec = vectorToString(rout.getVector());
-        System.out.println("Distance Vector on router " + ID + " is:\n" + vec);
-        System.out.println("Press enter to send data once all routers are setup.");
+        String vec = vectorToString(rout.getVector());                  //get vector
+        System.out.println("Distance Vector on router " + ID + " is:\n" + vec); //print info
+        System.out.println("Press enter to send data once all routers are setup."); //prompt user
         in.nextLine();
-        sendVector(rout, senderSocket); // send out this vector to all other routers
-        receiveVector(rout, receiverSocket, senderSocket);
+        sendVector(rout, senderSocket);                                 // send out this vector to all other routers
+        receiveVector(rout, receiverSocket, senderSocket);              //wait to receive data
 
 
     }
@@ -111,16 +116,16 @@ public class DistanceVector {
      */
 
     public String vectorToString(int[] vector) {
-        String string = "<";
-        for (int i = 0; i < vector.length; i++) {
+        String string = "<";                        //start of string
+        for (int i = 0; i < vector.length; i++) {   //loop through array
             if (i != vector.length - 1) {
-                string += vector[i] + ", ";
+                string += vector[i] + ", ";         //concadinate string
             } else {
                 string += vector[i] + ">";
             }
         }
 
-        return string;
+        return string;                              //return final string
     }
 
     /*
@@ -128,14 +133,14 @@ public class DistanceVector {
      */
     public void sendVector(Router r, DatagramSocket s) {
         try {
-            InetAddress IPAddress = InetAddress.getByName("localhost");
-            byte[] sendData = new byte[128];
-            sendData[0] = (byte) r.getName();
-            int[] v = r.getVector();
+            InetAddress IPAddress = InetAddress.getByName("localhost");     //get IP
+            byte[] sendData = new byte[128];                                //set up byte array
+            sendData[0] = (byte) r.getName();                               //set first spot to router name
+            int[] v = r.getVector();                                        //get distance vector
             for (int i = 0; i < v.length; i++) {
-                sendData[i + 1] = (byte) v[i];
+                sendData[i + 1] = (byte) v[i];                              //set up rest of byte array
             }
-            for (int i = 6666; i < 6666 + v.length; i++) {
+            for (int i = 6666; i < 6666 + v.length; i++) {                  //send to the other routers
                 if (r.getPort() != i) {
                     DatagramPacket sendPkt = new DatagramPacket(sendData, sendData.length, IPAddress, i + 1000);
                     s.send(sendPkt);
@@ -153,10 +158,10 @@ public class DistanceVector {
     public void receiveVector(Router r1, DatagramSocket rec, DatagramSocket sender) {
         Router r2 = null;
         try {
-            byte[] rcvData = new byte[128];
-            DatagramPacket rcvPkt = new DatagramPacket(rcvData, rcvData.length);
+            byte[] rcvData = new byte[128];                                             //create array to receive data
+            DatagramPacket rcvPkt = new DatagramPacket(rcvData, rcvData.length);        //initialize packet
             do{
-            rec.receive(rcvPkt);
+            rec.receive(rcvPkt);                                                        //get data
             rcvData = rcvPkt.getData();
             char name = (char) rcvData[0];
             r2 = new Router(name, 9999, r1.getVector().length);
@@ -164,8 +169,8 @@ public class DistanceVector {
             for (int i = 0; i < r1.getVector().length; i++) {
                 vec[i] = (int) rcvData[i + 1];
             }
-            System.out.println("Received distance vector from router "+name+":"+vectorToString(r2.getVector()));
-            if(updateInfo(r1,r2)){
+            System.out.println("Received distance vector from router "+name+":"+vectorToString(r2.getVector()));    //print info
+            if(updateInfo(r1,r2)){                                                                                  //if updated print and resend new info
                 System.out.println("Distance vector on router "+r1.getName()+" is updated to:\n"+vectorToString(r1.getVector()));
                 sendVector(r1,sender);
             }
@@ -183,17 +188,17 @@ public class DistanceVector {
      This method will take in two routers, and update the distance vectors if applicable.
      */
     public boolean updateInfo(Router r1, Router r2) {
-        boolean changed = false;
-        int[] v1 = r1.getVector();
+        boolean changed = false;                                //boolean for updated or not
+        int[] v1 = r1.getVector();                              //get two vwctors to compare
         int[] v2 = r2.getVector();
-        int secLoc = 999;
+        int secLoc = 999;                                       //hold which router we are at
 
-        for (int i = 0; i < v2.length; i++) {
+        for (int i = 0; i < v2.length; i++) {                   //see which router we are at
             if (v2[i] == 0) {
                 secLoc = i;
             }
         }
-        for (int i = 0; i < v1.length; i++) {
+        for (int i = 0; i < v1.length; i++) {                   //do distance vector calculation
             if (v1[i] > v1[secLoc] + v2[i]) {
                 v1[i] = v1[secLoc] + v2[i];
                 changed = true;

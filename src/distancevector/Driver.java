@@ -10,6 +10,10 @@ package distancevector;
  * Dominik Pruss
  * Networks 266 Lab 5
  */
+
+/*
+ Driver class to run program
+*/
 public class Driver {
     
     
