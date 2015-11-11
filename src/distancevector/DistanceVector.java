@@ -177,6 +177,7 @@ public class DistanceVector {
             else{
                 System.out.println("Distance vector on router "+r1.getName()+" is not updated.");
             }
+            
             } while(true);
         } catch (IOException exc) {
 

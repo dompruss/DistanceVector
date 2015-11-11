@@ -8,7 +8,7 @@ package distancevector;
 /**
  * Nicolas Moore
  * Dominik Pruss
- * Networks 266 Lab 5
+ * Networks 466 Lab 5
  */
 
 public class Router {
