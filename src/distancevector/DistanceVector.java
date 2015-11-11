@@ -19,6 +19,42 @@ import java.util.logging.Logger;
  Dominik Pruss
  Networks 466 Lab 5
  */
+class Router {
+    private int port;                               // hold port number
+    private int[] vector;                           // hold vector info
+    private char name;                              // hold router name
+    
+    /*
+     Constructor for Router object
+    */
+    public Router(char name, int port, int size){
+        this.name = name;
+        this.port = port;
+        vector = new int[size];
+    }
+    
+    /*
+     Returns port number
+    */
+    public int getPort(){
+        return port;
+    }
+    
+    /*
+     Returns vector info
+    */
+    public int[] getVector(){
+        return vector;
+    }
+    
+    /*
+     Returns name
+    */
+    public char getName(){
+        return name;
+    }
+    
+}
 
 public class DistanceVector {
 
@@ -27,6 +63,9 @@ public class DistanceVector {
     /*
     Constructor
     */
+    public static void main(String[] args){
+        DistanceVector dv = new DistanceVector();
+    }
     public DistanceVector() {
         
         
@@ -76,8 +115,9 @@ public class DistanceVector {
         sendVector(rout, senderSocket);                                 // send out this vector to all other routers
         receiveVector(rout, receiverSocket, senderSocket);              //wait to receive data
 
-
+    
     }
+
 
     /*
      This method sets up a router object and returns it. The router object will have a port number
